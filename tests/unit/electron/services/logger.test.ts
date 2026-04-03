@@ -33,6 +33,7 @@ import log from 'electron-log/main';
 import fs from 'fs';
 import {
   feishuLog,
+  getDefaultEngineFromSettings,
   getFeishuChannelLog,
   getFileLogLevel,
   getLogFilePath,
@@ -112,6 +113,46 @@ describe('logger.ts', () => {
     it('returns the scoped logger matching the selected platform', () => {
       expect(getFeishuChannelLog('feishu')).toBe(feishuLog);
       expect(getFeishuChannelLog('lark')).toBe(larkLog);
+    });
+  });
+
+  describe('getDefaultEngineFromSettings', () => {
+    it('returns defaultEngine when explicitly set', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({ defaultEngine: 'claude' }));
+      expect(getDefaultEngineFromSettings()).toBe('claude');
+    });
+
+    it('falls back to first non-disabled engine in engineModels', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
+        engineModels: { opencode: { enabled: false }, copilot: { enabled: true } },
+      }));
+      expect(getDefaultEngineFromSettings()).toBe('copilot');
+    });
+
+    it('skips engines with empty-string keys', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
+        engineModels: { '': { enabled: true }, copilot: { enabled: true } },
+      }));
+      expect(getDefaultEngineFromSettings()).toBe('copilot');
+    });
+
+    it('falls back to "opencode" when engineModels is an array', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
+        engineModels: [{ enabled: true }],
+      }));
+      expect(getDefaultEngineFromSettings()).toBe('opencode');
+    });
+
+    it('falls back to "opencode" when engineModels is missing', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({}));
+      expect(getDefaultEngineFromSettings()).toBe('opencode');
+    });
+
+    it('falls back to "opencode" when all engines are disabled', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
+        engineModels: { opencode: { enabled: false }, copilot: { enabled: false } },
+      }));
+      expect(getDefaultEngineFromSettings()).toBe('opencode');
     });
   });
 });

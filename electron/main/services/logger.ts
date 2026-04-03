@@ -128,8 +128,13 @@ export function getDefaultEngineFromSettings(): string {
   // No explicit default — scan engineModels (written by UI) for the first
   // engine that is not explicitly disabled.
   const engineModels = settings?.engineModels;
-  if (engineModels && typeof engineModels === "object") {
+  if (
+    engineModels &&
+    typeof engineModels === "object" &&
+    !Array.isArray(engineModels)
+  ) {
     for (const [engine, config] of Object.entries(engineModels as Record<string, any>)) {
+      if (engine.length === 0) continue;
       if (config?.enabled === false) continue;
       return engine;
     }
