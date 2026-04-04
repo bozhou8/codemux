@@ -115,29 +115,12 @@ export function getLogFilePath(): string {
 
 export { loadSettings, saveSettings };
 
-/** Read the user-configured default engine type from settings.json.
- *  Falls back to the first engine that is not explicitly disabled,
- *  and finally uses "opencode" as default.
- */
+/** Read the user-configured default engine type from settings.json. */
 export function getDefaultEngineFromSettings(): string {
   const settings = loadSettings();
   const value = settings?.defaultEngine;
   if (typeof value === "string" && value.length > 0) {
     return value;
-  }
-  // No explicit default — scan engineModels (written by UI) for the first
-  // engine that is not explicitly disabled.
-  const engineModels = settings?.engineModels;
-  if (
-    engineModels &&
-    typeof engineModels === "object" &&
-    !Array.isArray(engineModels)
-  ) {
-    for (const [engine, config] of Object.entries(engineModels as Record<string, any>)) {
-      if (engine.length === 0) continue;
-      if (config?.enabled === false) continue;
-      return engine;
-    }
   }
   return "opencode";
 }

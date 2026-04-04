@@ -122,36 +122,13 @@ describe('logger.ts', () => {
       expect(getDefaultEngineFromSettings()).toBe('claude');
     });
 
-    it('falls back to first non-disabled engine in engineModels', () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
-        engineModels: { opencode: { enabled: false }, copilot: { enabled: true } },
-      }));
-      expect(getDefaultEngineFromSettings()).toBe('copilot');
-    });
-
-    it('skips engines with empty-string keys', () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
-        engineModels: { '': { enabled: true }, copilot: { enabled: true } },
-      }));
-      expect(getDefaultEngineFromSettings()).toBe('copilot');
-    });
-
-    it('falls back to "opencode" when engineModels is an array', () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
-        engineModels: [{ enabled: true }],
-      }));
-      expect(getDefaultEngineFromSettings()).toBe('opencode');
-    });
-
-    it('falls back to "opencode" when engineModels is missing', () => {
+    it('falls back to "opencode" when defaultEngine is missing', () => {
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({}));
       expect(getDefaultEngineFromSettings()).toBe('opencode');
     });
 
-    it('falls back to "opencode" when all engines are disabled', () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
-        engineModels: { opencode: { enabled: false }, copilot: { enabled: false } },
-      }));
+    it('falls back to "opencode" when defaultEngine is empty', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({ defaultEngine: '' }));
       expect(getDefaultEngineFromSettings()).toBe('opencode');
     });
   });
